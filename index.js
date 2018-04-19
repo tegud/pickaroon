@@ -2,38 +2,21 @@ const Loggers = require("./lib/loggers");
 const buildLogger = require("./lib/build-logger");
 const Levels = require("./lib/levels");
 
-const availableLevels = new Levels({
-    DEBUG: 0,
-    INFO: 1,
-    WARN: 2,
-    ERROR: 3
-});
-
 module.exports = function() {
+    const availableLevels = new Levels(
+        {
+            DEBUG: 0,
+            INFO: 1,
+            WARN: 2,
+            ERROR: 3
+        },
+        "INFO"
+    );
+
     const loggers = new Loggers(
+        availableLevels,
         buildLogger(availableLevels, "console", "default")
     );
-    let globalLogLevel = "INFO";
-
-    function log(...args) {
-        const [level] = args;
-
-        loggers.all().forEach(logger => {
-            if (
-                !logger.enabled ||
-                availableLevels.shouldLog(
-                    typeof logger.level !== "undefined"
-                        ? logger.level
-                        : globalLogLevel,
-                    level
-                )
-            ) {
-                return;
-            }
-
-            logger.logger.log(...args);
-        });
-    }
 
     function enable(logger, enable) {
         if (logger.enabled === enable) {
@@ -59,6 +42,14 @@ module.exports = function() {
                     return;
                 }
 
+                if (configProperty === "level") {
+                    logger.level =
+                        typeof config[configProperty] === "function"
+                            ? config[configProperty]
+                            : () => config[configProperty];
+                    return;
+                }
+
                 logger[configProperty] = config[configProperty];
             });
         });
@@ -68,22 +59,21 @@ module.exports = function() {
         (allLevels, level) => {
             allLevels[`log${level[0]}${level.substring(1).toLowerCase()}`] = (
                 ...args
-            ) => log(level, ...args);
+            ) => loggers.log(level, ...args);
 
             return allLevels;
         },
         {
             setLogLevel: (loggerName, level) => {
                 if (!level) {
-                    globalLogLevel = loggerName;
-                    return api;
+                    availableLevels.setGlobalLogLevel(loggerName);
+                } else {
+                    configureLogger(loggerName, { level });
                 }
-
-                configureLogger(loggerName, { level });
 
                 return api;
             },
-            configureLogger: configureLogger,
+            configureLogger,
             removeLogger: loggerName => {
                 loggers
                     .get(loggerName)

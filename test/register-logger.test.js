@@ -10,7 +10,7 @@ describe("register logger", () => {
             .registerLogger(fakeLogger)
             .logError("TEST");
 
-        expect(fakeLogger.lastLogged()).toEqual("TEST");
+        expect(fakeLogger.lastLogged().message).toEqual("TEST");
     });
 
     test("sets level for registered logger", () => {
@@ -21,7 +21,7 @@ describe("register logger", () => {
             .registerLogger(fakeLogger, "DEBUG")
             .logDebug("TEST");
 
-        expect(fakeLogger.lastLogged()).toEqual("TEST");
+        expect(fakeLogger.lastLogged().message).toEqual("TEST");
     });
 
     test("sets name and level for registered logger", () => {
@@ -33,7 +33,7 @@ describe("register logger", () => {
             .setLogLevel("FAKE", "DEBUG")
             .logDebug("TEST");
 
-        expect(fakeLogger.lastLogged()).toEqual("TEST");
+        expect(fakeLogger.lastLogged().message).toEqual("TEST");
     });
 
     test("sets only name for registered logger", () => {
@@ -45,7 +45,7 @@ describe("register logger", () => {
             .setLogLevel("FAKE", "DEBUG")
             .logDebug("TEST");
 
-        expect(fakeLogger.lastLogged()).toEqual("TEST");
+        expect(fakeLogger.lastLogged().message).toEqual("TEST");
     });
 
     test("sets options for registered logger", () => {
@@ -59,7 +59,7 @@ describe("register logger", () => {
             .setLogLevel("FAKE", "DEBUG")
             .logDebug("TEST");
 
-        expect(fakeLogger.lastLogged()).toEqual("TEST");
+        expect(fakeLogger.lastLogged().message).toEqual("TEST");
     });
 
     test("logger can be registered disabled", () => {

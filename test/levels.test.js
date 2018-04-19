@@ -1,4 +1,5 @@
 const Pickaroon = require("../");
+const FakeLogger = require("./lib/fake-logger");
 
 describe("levels", () => {
     let logSpy;
@@ -79,5 +80,70 @@ describe("levels", () => {
         pickaroon.logError("TEST");
 
         expect(lastLogged).toEqual("TEST");
+    });
+
+    describe("variable log level", () => {
+        test("does not log when global log level function returns lower log level", () => {
+            let lastLogged;
+
+            logSpy = jest
+                .spyOn(console, "log")
+                .mockImplementation(messageIn => (lastLogged = messageIn));
+
+            new Pickaroon().setLogLevel(() => "INFO").logDebug("TEST");
+
+            expect(lastLogged).toEqual(undefined);
+        });
+
+        test("logs when global log level function returns valid log level", () => {
+            let lastLogged;
+
+            logSpy = jest
+                .spyOn(console, "log")
+                .mockImplementation(messageIn => (lastLogged = messageIn));
+
+            new Pickaroon().setLogLevel(() => "DEBUG").logDebug("TEST");
+
+            expect(lastLogged).toEqual("TEST");
+        });
+
+        test("does not log when individual logger log level function returns lower log level", () => {
+            let lastLogged;
+
+            logSpy = jest
+                .spyOn(console, "log")
+                .mockImplementation(messageIn => (lastLogged = messageIn));
+
+            new Pickaroon()
+                .setLogLevel("default", () => "INFO")
+                .logDebug("TEST");
+
+            expect(lastLogged).toEqual(undefined);
+        });
+
+        test("logs when individual logger log level function returns valid level", () => {
+            let lastLogged;
+
+            logSpy = jest
+                .spyOn(console, "log")
+                .mockImplementation(messageIn => (lastLogged = messageIn));
+
+            new Pickaroon()
+                .setLogLevel("default", () => "DEBUG")
+                .logDebug("TEST");
+
+            expect(lastLogged).toEqual("TEST");
+        });
+
+        test("does not logs when logger registered with log level function returns valid level", () => {
+            const fakeLogger = new FakeLogger();
+
+            const pickaroon = new Pickaroon()
+                .removeLogger("default")
+                .registerLogger(fakeLogger, () => "INFO")
+                .logDebug("TEST");
+
+            expect(fakeLogger.lastLogged()).toEqual(undefined);
+        });
     });
 });
