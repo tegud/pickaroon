@@ -87,6 +87,10 @@ module.exports = function() {
                 loggers.add(buildLogger(availableLevels, ...args));
 
                 return api;
+            },
+            setFieldStandard: value => {
+                loggers.configure("fieldStandard", value);
+                return api;
             }
         }
     );
