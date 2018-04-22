@@ -36,22 +36,32 @@ module.exports = function() {
 
     function configureLogger(loggerName, config) {
         loggers.get(loggerName).forEach(logger => {
-            Object.keys(config).forEach(configProperty => {
-                if (configProperty === "enabled") {
-                    enable(logger, config[configProperty]);
-                    return;
-                }
+            const remainingConfig = Object.keys(config).reduce(
+                (remaining, configProperty) => {
+                    if (configProperty === "enabled") {
+                        enable(logger, config[configProperty]);
+                        return remaining;
+                    }
 
-                if (configProperty === "level") {
-                    logger.level =
-                        typeof config[configProperty] === "function"
-                            ? config[configProperty]
-                            : () => config[configProperty];
-                    return;
-                }
+                    if (configProperty === "level") {
+                        logger.level =
+                            typeof config[configProperty] === "function"
+                                ? config[configProperty]
+                                : () => config[configProperty];
+                        return remaining;
+                    }
 
-                logger[configProperty] = config[configProperty];
-            });
+                    remaining[configProperty] = config[configProperty];
+                    return remaining;
+                },
+                {}
+            );
+
+            if (!logger.logger.configure) {
+                return;
+            }
+
+            logger.logger.configure(remainingConfig);
         });
     }
 

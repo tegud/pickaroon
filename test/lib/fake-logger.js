@@ -1,6 +1,7 @@
 module.exports = function FakeLogger() {
     let started = false;
     let lastLogged;
+    let config;
 
     return {
         log: (level, message) => (lastLogged = message),
@@ -14,6 +15,8 @@ module.exports = function FakeLogger() {
         },
         lastLogged: () => lastLogged,
         isStarted: () => started,
-        resetIsStarted: () => (started = false)
+        resetIsStarted: () => (started = false),
+        configure: newConfig => (config = newConfig),
+        getConfig: () => config
     };
 };

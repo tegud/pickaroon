@@ -60,4 +60,98 @@ describe("levels", () => {
 
         expect(lastLogged).toEqual("2018-04-21T23:20:00Z - TEST");
     });
+
+    test("logs timestamp & level when configured", () => {
+        let lastLogged;
+
+        logSpy = jest
+            .spyOn(console, "log")
+            .mockImplementation(messageIn => (lastLogged = messageIn));
+
+        const logger = new ConsoleLogger();
+
+        logger.configure({ includeTimestamp: true, includeLevel: true });
+
+        logger.log("INFO", {
+            message: "TEST",
+            timestamp: moment("2018-04-21T23:20:00Z").utc()
+        });
+
+        expect(lastLogged).toEqual("2018-04-21T23:20:00Z - info - TEST");
+    });
+
+    test("logs specified fields as prefixes", () => {
+        let lastLogged;
+
+        logSpy = jest
+            .spyOn(console, "log")
+            .mockImplementation(messageIn => (lastLogged = messageIn));
+
+        const logger = new ConsoleLogger();
+
+        logger.configure({
+            includeTimestamp: true,
+            includeLevel: true,
+            prefixFields: ["request_id"]
+        });
+
+        logger.log("INFO", {
+            message: "TEST",
+            request_id: "12345",
+            timestamp: moment("2018-04-21T23:20:00Z").utc()
+        });
+
+        expect(lastLogged).toEqual(
+            "2018-04-21T23:20:00Z - info - 12345 - TEST"
+        );
+    });
+
+    test("logs specified fields as prefixes when missing", () => {
+        let lastLogged;
+
+        logSpy = jest
+            .spyOn(console, "log")
+            .mockImplementation(messageIn => (lastLogged = messageIn));
+
+        const logger = new ConsoleLogger();
+
+        logger.configure({
+            includeTimestamp: true,
+            includeLevel: true,
+            prefixFields: ["request_id"]
+        });
+
+        logger.log("INFO", {
+            message: "TEST",
+            timestamp: moment("2018-04-21T23:20:00Z").utc()
+        });
+
+        expect(lastLogged).toEqual("2018-04-21T23:20:00Z - info - TEST");
+    });
+
+    test("logs additional fields after message", () => {
+        let lastLogged;
+
+        logSpy = jest
+            .spyOn(console, "log")
+            .mockImplementation(messageIn => (lastLogged = messageIn));
+
+        const logger = new ConsoleLogger();
+
+        logger.configure({
+            includeTimestamp: true,
+            includeLevel: true
+        });
+
+        logger.log("INFO", {
+            message: "TEST",
+            request_id: "12345",
+            session_id: "ABCDE",
+            timestamp: moment("2018-04-21T23:20:00Z").utc()
+        });
+
+        expect(lastLogged).toEqual(
+            "2018-04-21T23:20:00Z - info - TEST, request_id=12345 session_id=ABCDE"
+        );
+    });
 });
