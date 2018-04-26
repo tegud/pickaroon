@@ -21,7 +21,7 @@ describe("logstash tcp logger", () => {
             console.log(`ERROR!!! ${e.code}`);
         });
 
-        tcpServer.listen(3001, "0.0.0.0", () => {
+        tcpServer.listen(9999, "0.0.0.0", () => {
             done();
         });
     });
@@ -38,7 +38,7 @@ describe("logstash tcp logger", () => {
         logger.configure({
             protocol: "tcp",
             host: "127.0.0.1",
-            port: 3001
+            port: 9999
         });
 
         logger.start().then(() => {

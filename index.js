@@ -34,34 +34,47 @@ module.exports = function() {
         }
     }
 
-    function configureLogger(loggerName, config) {
-        loggers.get(loggerName).forEach(logger => {
-            const remainingConfig = Object.keys(config).reduce(
-                (remaining, configProperty) => {
+    function createConfigObject(loggerName, config) {
+        const configObject = {};
+
+        configObject[loggerName] = config;
+
+        return configObject;
+    }
+
+    function configure(loggerConfigs) {
+        Object.keys(loggerConfigs).forEach(property => {
+            const matchingLoggers = loggers.get(property);
+
+            matchingLoggers.forEach(logger => {
+                const remainingConfig = Object.keys(
+                    loggerConfigs[property]
+                ).reduce((remaining, configProperty) => {
                     if (configProperty === "enabled") {
-                        enable(logger, config[configProperty]);
+                        enable(logger, loggerConfigs[property][configProperty]);
                         return remaining;
                     }
 
                     if (configProperty === "level") {
                         logger.level =
-                            typeof config[configProperty] === "function"
-                                ? config[configProperty]
-                                : () => config[configProperty];
+                            typeof loggerConfigs[property][configProperty] ===
+                            "function"
+                                ? loggerConfigs[property][configProperty]
+                                : () => loggerConfigs[property][configProperty];
                         return remaining;
                     }
 
-                    remaining[configProperty] = config[configProperty];
+                    remaining[configProperty] =
+                        loggerConfigs[property][configProperty];
                     return remaining;
-                },
-                {}
-            );
+                }, {});
 
-            if (!logger.logger.configure) {
-                return;
-            }
+                if (!logger.logger.configure) {
+                    return;
+                }
 
-            logger.logger.configure(remainingConfig);
+                logger.logger.configure(remainingConfig);
+            });
         });
     }
 
@@ -78,12 +91,19 @@ module.exports = function() {
                 if (!level) {
                     availableLevels.setGlobalLogLevel(loggerName);
                 } else {
-                    configureLogger(loggerName, { level });
+                    configure(createConfigObject(loggerName, { level }));
                 }
 
                 return api;
             },
-            configureLogger,
+            configureLogger: (loggerName, config) => {
+                configure(createConfigObject(loggerName, config));
+                return api;
+            },
+            configure: (...args) => {
+                configure(...args);
+                return api;
+            },
             removeLogger: loggerName => {
                 loggers
                     .get(loggerName)
@@ -101,6 +121,11 @@ module.exports = function() {
             setFieldStandard: value => {
                 loggers.configure("fieldStandard", value);
                 return api;
+            },
+            stop: () => {
+                loggers.all().forEach(logger => enable(logger, false));
+
+                return Promise.resolve();
             }
         }
     );

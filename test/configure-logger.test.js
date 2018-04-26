@@ -30,4 +30,21 @@ describe("configure logger", () => {
 
         expect(logger.getConfig()).toEqual({});
     });
+
+    test("configuration object configures logger", () => {
+        const fakeLogger = new FakeLogger();
+
+        new Pickaroon()
+            .registerLogger(fakeLogger, {
+                name: "FAKE",
+                enabled: true
+            })
+            .configure({
+                FAKE: {
+                    setting: "ABC"
+                }
+            });
+
+        expect(fakeLogger.getConfig()).toEqual({ setting: "ABC" });
+    });
 });
