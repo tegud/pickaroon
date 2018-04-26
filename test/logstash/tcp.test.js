@@ -6,6 +6,7 @@ describe("logstash tcp logger", () => {
     let tcpServer;
     let logger;
     let onData;
+    let logSpy;
 
     beforeEach(done => {
         tcpServer = net.createServer(socket => {
@@ -30,6 +31,11 @@ describe("logstash tcp logger", () => {
         tcpServer.close();
         onData = undefined;
         logger.stop();
+
+        if (logSpy) {
+            logSpy.mockReset();
+            logSpy.mockRestore();
+        }
     });
 
     test("formatted event is sent", done => {
@@ -56,6 +62,30 @@ describe("logstash tcp logger", () => {
 
                 done();
             };
+        });
+    });
+
+    test("tcp error is logged to console", done => {
+        logger = new LogstashLogger();
+
+        logSpy = jest.spyOn(console, "log").mockImplementation(messageIn => {
+            expect(messageIn).toBe(
+                "TCP Client error: connect ECONNREFUSED 127.0.0.1:9998"
+            );
+            done();
+        });
+
+        logger.configure({
+            protocol: "tcp",
+            host: "127.0.0.1",
+            port: 9998
+        });
+
+        logger.start().then(() => {
+            logger.log("INFO", {
+                message: "TEST",
+                timestamp: moment("2018-04-21T23:20:00Z").utc()
+            });
         });
     });
 });

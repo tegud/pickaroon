@@ -62,6 +62,20 @@ describe("register logger", () => {
         expect(fakeLogger.lastLogged().message).toEqual("TEST");
     });
 
+    test("sets config for registered logger", () => {
+        const fakeLogger = new FakeLogger();
+
+        const pickaroon = new Pickaroon()
+            .removeLogger("default")
+            .registerLogger(fakeLogger, {
+                name: "FAKE",
+                x: 1,
+                y: 2
+            });
+
+        expect(fakeLogger.getConfig()).toEqual({ x: 1, y: 2 });
+    });
+
     test("logger can be registered disabled", () => {
         const fakeLogger = new FakeLogger();
 

@@ -1,6 +1,6 @@
 {
     "name": "pickaroon",
-    "version": "0.3.0",
+    "version": "0.4.0",
     "description": "",
     "main": "index.js",
     "scripts": {
@@ -12,11 +12,7 @@
         "type": "git",
         "url": "git+https://github.com/tegud/pickaroon.git"
     },
-    "keywords": [
-        "logging",
-        "structured",
-        "nodejs"
-    ],
+    "keywords": ["logging", "structured", "nodejs"],
     "author": "Steve Elliott",
     "license": "ISC",
     "bugs": {
@@ -28,6 +24,7 @@
         "jest": "^22.4.3"
     },
     "dependencies": {
-        "moment": "^2.22.1"
+        "moment": "^2.22.1",
+        "object-path": "^0.11.4"
     }
 }
