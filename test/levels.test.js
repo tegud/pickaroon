@@ -25,6 +25,18 @@ describe("levels", () => {
         expect(lastLogged).toEqual("TEST");
     });
 
+    test("accepts lower case level", () => {
+        let lastLogged;
+
+        logSpy = jest
+            .spyOn(console, "log")
+            .mockImplementation(messageIn => (lastLogged = messageIn));
+
+        const pickaroon = new Pickaroon().setLogLevel("debug").logInfo("TEST");
+
+        expect(lastLogged).toEqual("TEST");
+    });
+
     test("logs debug messages when logLevel set to DEBUG", () => {
         let lastLogged;
 

@@ -1,7 +1,7 @@
 const FakeLogger = require("./lib/fake-logger");
 const Pickaroon = require("../");
 
-describe("register logger", () => {
+describe("log", () => {
     test("message is logged", () => {
         const fakeLogger = new FakeLogger();
 
@@ -44,5 +44,17 @@ describe("register logger", () => {
             .logInfo({ message: "TEST" });
 
         expect(fakeLogger.lastLogged().message).toEqual("TEST");
+    });
+
+    test("configured fields are logged", () => {
+        const fakeLogger = new FakeLogger();
+
+        const pickaroon = new Pickaroon()
+            .removeLogger("default")
+            .registerLogger(fakeLogger)
+            .configure({ fields: { x: 12345 } })
+            .logInfo({ message: "TEST" });
+
+        expect(fakeLogger.lastLogged().x).toEqual(12345);
     });
 });

@@ -77,4 +77,42 @@ describe("logstash udp logger", () => {
             });
         });
     });
+
+    test("configured fields are appended to event", done => {
+        logger = new LogstashLogger();
+
+        logger.configure({
+            protocol: "udp",
+            host: "127.0.0.1",
+            port: 9999,
+            eventType: "test",
+            fields: {
+                x: 1,
+                y: 2
+            }
+        });
+
+        logger.start().then(() => {
+            logger.log("INFO", {
+                message: "TEST",
+                timestamp: moment("2018-04-21T23:20:00Z").utc()
+            });
+
+            udpClient.on("message", message => {
+                const data = message.toString("utf-8");
+                const parsedData = JSON.parse(data);
+
+                expect(parsedData).toEqual({
+                    "@timestamp": "2018-04-21T23:20:00.000Z",
+                    message: "TEST",
+                    level: "info",
+                    type: "test",
+                    x: 1,
+                    y: 2
+                });
+
+                done();
+            });
+        });
+    });
 });

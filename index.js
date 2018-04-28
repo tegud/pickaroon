@@ -43,39 +43,60 @@ module.exports = function() {
     }
 
     function configure(loggerConfigs) {
-        Object.keys(loggerConfigs).forEach(property => {
-            const matchingLoggers = loggers.get(property);
+        const remainingConfig = Object.keys(loggerConfigs).reduce(
+            (remaining, property) => {
+                const matchingLoggers = loggers.get(property);
 
-            matchingLoggers.forEach(logger => {
-                const remainingConfig = Object.keys(
-                    loggerConfigs[property]
-                ).reduce((remaining, configProperty) => {
-                    if (configProperty === "enabled") {
-                        enable(logger, loggerConfigs[property][configProperty]);
-                        return remaining;
-                    }
-
-                    if (configProperty === "level") {
-                        logger.level =
-                            typeof loggerConfigs[property][configProperty] ===
-                            "function"
-                                ? loggerConfigs[property][configProperty]
-                                : () => loggerConfigs[property][configProperty];
-                        return remaining;
-                    }
-
-                    remaining[configProperty] =
-                        loggerConfigs[property][configProperty];
+                if (!matchingLoggers.length) {
+                    remaining[property] = loggerConfigs[property];
                     return remaining;
-                }, {});
-
-                if (!logger.logger.configure) {
-                    return;
                 }
 
-                logger.logger.configure(remainingConfig);
-            });
-        });
+                matchingLoggers.forEach(logger => {
+                    const remainingConfig = Object.keys(
+                        loggerConfigs[property]
+                    ).reduce((remaining, configProperty) => {
+                        if (configProperty === "enabled") {
+                            enable(
+                                logger,
+                                loggerConfigs[property][configProperty]
+                            );
+                            return remaining;
+                        }
+
+                        if (configProperty === "level") {
+                            logger.level =
+                                typeof loggerConfigs[property][
+                                    configProperty
+                                ] === "function"
+                                    ? loggerConfigs[property][configProperty]
+                                    : () =>
+                                        loggerConfigs[property][
+                                            configProperty
+                                        ];
+                            return remaining;
+                        }
+
+                        remaining[configProperty] =
+                            loggerConfigs[property][configProperty];
+                        return remaining;
+                    }, {});
+
+                    if (!logger.logger.configure) {
+                        return;
+                    }
+
+                    logger.logger.configure(remainingConfig);
+                });
+
+                return remaining;
+            },
+            {}
+        );
+
+        Object.keys(remainingConfig).forEach(property =>
+            loggers.configure(property, remainingConfig[property])
+        );
     }
 
     const api = availableLevels.allLevels().reduce(
